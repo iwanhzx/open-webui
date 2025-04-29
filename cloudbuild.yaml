@@ -1,0 +1,26 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg=BUILDPLATFORM=linux/amd64'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/openwebui'
+      - '.'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/openwebui'
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'openwebui'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/openwebui'
+      - '--platform'
+      - 'managed'
+      - '--region'
+      - 'asia-southeast2'

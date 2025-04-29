@@ -24,6 +24,9 @@ ARG GID=0
 FROM --platform=linux/amd64 node:22-alpine3.20 AS build
 ARG BUILD_HASH
 
+# Iwan added
+RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
+
 WORKDIR /app
 
 COPY package.json package-lock.json ./

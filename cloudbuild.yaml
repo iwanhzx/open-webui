@@ -6,6 +6,8 @@ steps:
       - '-t'
       - 'gcr.io/$PROJECT_ID/openwebui'
       - '.'
+    env:
+      - NODE_OPTIONS=--max-old-space-size=4096
 
   - name: 'gcr.io/cloud-builders/docker'
     args:

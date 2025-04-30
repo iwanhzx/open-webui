@@ -1,31 +1,62 @@
 steps:
+  # 1. Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'build'
-      - '--build-arg=BUILDPLATFORM=linux/amd64'
-      - '-t'
-      - 'gcr.io/$PROJECT_ID/openwebui'
-      - '.'
-    env:
-      - NODE_OPTIONS=--max-old-space-size=4096
+    args: [
+        'build',
+        '-t', '${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO_NAME}/${_SERVICE_NAME}:$SHORT_SHA',
+        '.' # Build context is the current directory (repo root)
+      ]
+    id: Build
 
+  # 2. Push the Docker image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'push'
-      - 'gcr.io/$PROJECT_ID/openwebui'
+    args: ['push', '${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO_NAME}/${_SERVICE_NAME}:$SHORT_SHA']
+    id: Push
+    waitFor: ['Build'] # Wait for the build step to complete
 
+  # 3. Deploy to Cloud Run using the specific image built
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: 'gcloud'
-    args:
-      - 'run'
-      - 'deploy'
-      - 'openwebui'
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/openwebui'
-      - '--platform'
-      - 'managed'
-      - '--region'
-      - 'asia-southeast2'
+    entrypoint: gcloud
+    args: [
+        'run', 'deploy', '${_SERVICE_NAME}', # Your Cloud Run service name
+        '--image', '${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO_NAME}/${_SERVICE_NAME}:$SHORT_SHA',
+        '--region', '${_DEPLOY_REGION}',
+        '--platform', 'managed',
+        '--port', '8080', # Internal container port
+        '--allow-unauthenticated', # Or --no-allow-unauthenticated
+        # Resource Allocation (Adjust as needed)
+        '--min-instances', '0',
+        '--max-instances', '5',
+        '--cpu', '1',
+        '--memory', '2Gi',
+        # Secrets - Map secret names (key) to env vars (value)
+        '--set-secrets', 'DATABASE_PASSWORD=TEWIu1Nw2TeVYnPGiAQl:latest,SECRET_KEY=f8a3b5d7e9c1a0b2d4e6f7c9a1b3d5e7f0a2b4c6d8e1f3a5b7c9d1e2f0a3:latest',
+        # Environment Variables
+        '--set-env-vars', '^--^DATABASE_URL=mysql://admin:${DATABASE_PASSWORD}@openwebuicluster-instance-1.c95dcez2lswe.ap-southeast-1.rds.amazonaws.com:3306/OpenWebUIDB?sslaccept=strict&sslcert=/app/certs/ap-southeast-3-bundle.pem--OPEN_WEBUI_PORT=8080',
+        # Add other non-secret env vars here, separated by -- (use ^--^ as delimiter if needed)
+        # Networking (Uncomment and configure if using static IP/VPN)
+        # '--vpc-connector', 'projects/$PROJECT_ID/locations/${_DEPLOY_REGION}/connectors/YOUR_CONNECTOR_NAME',
+        # '--vpc-egress', 'all-traffic', # Or private-ranges-only
+        # Service Account for the *running* Cloud Run service
+        '--service-account', 'iwanhzx@gmail.com' # e.g., project-number-compute@developer.gserviceaccount.com or a dedicated SA
+      ]
+    id: Deploy
+    waitFor: ['Push'] # Wait for the push step to complete
 
+# Define the image to be pushed explicitly
+images:
+  - '${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO_NAME}/${_SERVICE_NAME}:$SHORT_SHA'
+
+# Define substitution variables (can be overridden by trigger)
+substitutions:
+  _SERVICE_NAME: 'open-webui-service' # Your desired Cloud Run service name
+  _DEPLOY_REGION: 'asia-southeast2-a' # CHANGE to your GCP region
+  _AR_REGION: 'asia-southeast2-a' # CHANGE to your Artifact Registry region (often same as deploy)
+  _AR_REPO_NAME: 'open-webui-repo' # Your Artifact Registry repo name
+  # _VPC_CONNECTOR: 'your-connector-name' # Optional: Uncomment if needed
+
+# Options
 options:
   logging: CLOUD_LOGGING_ONLY
+  # Optional: Specify machine type if needed for build
+  # machineType: 'E2_HIGHCPU_8'

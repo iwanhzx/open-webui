@@ -47,14 +47,6 @@ steps:
 images:
   - '${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO_NAME}/${_SERVICE_NAME}:$SHORT_SHA'
 
-# Define substitution variables (can be overridden by trigger)
-substitutions:
-  _SERVICE_NAME: 'open-webui-service' # Your desired Cloud Run service name
-  _DEPLOY_REGION: 'asia-southeast2-a' # CHANGE to your GCP region
-  _AR_REGION: 'asia-southeast2-a' # CHANGE to your Artifact Registry region (often same as deploy)
-  _AR_REPO_NAME: 'open-webui-repo' # Your Artifact Registry repo name
-  # _VPC_CONNECTOR: 'your-connector-name' # Optional: Uncomment if needed
-
 # Options
 options:
   logging: CLOUD_LOGGING_ONLY

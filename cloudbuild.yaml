@@ -32,7 +32,7 @@ steps:
         # Secrets - Map secret names (key) to env vars (value)
         '--set-secrets', 'DATABASE_PASSWORD=TEWIu1Nw2TeVYnPGiAQl:latest,SECRET_KEY=f8a3b5d7e9c1a0b2d4e6f7c9a1b3d5e7f0a2b4c6d8e1f3a5b7c9d1e2f0a3:latest',
         # Environment Variables
-        '--set-env-vars', '^--^DATABASE_URL=mysql://admin:${DATABASE_PASSWORD}@openwebuicluster-instance-1.c95dcez2lswe.ap-southeast-1.rds.amazonaws.com:3306/OpenWebUIDB?sslaccept=strict&sslcert=/app/certs/ap-southeast-3-bundle.pem--OPEN_WEBUI_PORT=8080',
+        '--set-env-vars', '^--^DATABASE_URL=mysql://admin:${_DATABASE_PASSWORD}@openwebuicluster-instance-1.c95dcez2lswe.ap-southeast-1.rds.amazonaws.com:3306/OpenWebUIDB?sslaccept=strict&sslcert=/app/certs/ap-southeast-3-bundle.pem--OPEN_WEBUI_PORT=8080',
         # Add other non-secret env vars here, separated by -- (use ^--^ as delimiter if needed)
         # Networking (Uncomment and configure if using static IP/VPN)
         # '--vpc-connector', 'projects/$PROJECT_ID/locations/${_DEPLOY_REGION}/connectors/YOUR_CONNECTOR_NAME',

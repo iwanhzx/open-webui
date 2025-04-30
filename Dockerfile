@@ -31,7 +31,7 @@ RUN npm ci
 
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
-RUN npm run build
+RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
 
 # Iwan added
 COPY ./certs/ap-southeast-3-bundle.pem /app/certs/ap-southeast-3-bundle.pem

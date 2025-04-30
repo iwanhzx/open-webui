@@ -34,7 +34,7 @@ ENV APP_BUILD_HASH=${BUILD_HASH}
 # RUN npm run build
 
 # Iwan added
-RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
+COPY ./certs/ap-southeast-3-bundle.pem /app/certs/ap-southeast-3-bundle.pem
 
 ######## WebUI backend ########
 FROM python:3.11-slim-bookworm AS base
